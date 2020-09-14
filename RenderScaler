@@ -1,0 +1,63 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.Rendering.LWRP;
+
+public class RenderScaler : MonoBehaviour
+{
+    //settings
+    public float frequency;
+    public float deltaValue = 0.01f;
+
+    //links
+    public LightweightRenderPipelineAsset rpAsset;
+    public UnityStandardAssets.Utility.FPSCounter fpsCounter;
+
+    private float timer = 0;
+
+    public void Update()
+    {
+        timer += Time.deltaTime;
+        if (timer > frequency)
+        {
+            timer = 0;
+            RunrenderScaleCheck(fpsCounter.m_CurrentFps);
+        }
+    }
+
+    public void RunrenderScaleCheck(int currentFPS)
+    {
+#if UNITY_ANDROID
+
+        if (currentFPS < GameConstants.instance.currentMinimumFramerate)
+        {
+            ModRenderScale(-deltaValue);
+        }
+
+        if (currentFPS >= GameConstants.instance.currentMaximumFramerate)
+        {
+            ModRenderScale(deltaValue);
+        }
+#endif
+    }
+
+
+    private void ModRenderScale(float value)
+    {
+        if (value < 0)
+        {
+            if (rpAsset.renderScale > GameConstants.instance.minRes) //minimum res
+            {
+                rpAsset.renderScale += value;
+            }
+        }
+        else
+        {
+            if (rpAsset.renderScale < GameConstants.instance.maxRes) //maximum res
+            {
+                rpAsset.renderScale += value;
+            }
+        }
+    }
+
+}
